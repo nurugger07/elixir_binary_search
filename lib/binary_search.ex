@@ -1,0 +1,2 @@
+defmodule BinarySearch do
+end
