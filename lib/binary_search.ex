@@ -3,52 +3,35 @@ defmodule BinarySearch do
   @doc """
     1. sort whitelist of numbers
     2. reduce the set to find value
-    3. if found, add to response
+    3. return items not in whitelist
   """
   def run(whitelist, input) do
     check_set = Enum.sort(whitelist)
 
-    Enum.map(input, fn(x) -> rank(to_integer(x), check_set) end) |> List.flatten
+    Enum.map(input, fn(x) -> rank(x, 0, Enum.count(check_set) - 1, check_set) end) |> List.flatten
   end
 
-  def rank(_, []), do: []
-  def rank(key, whitelist) do
-    index = range(0, max_index(whitelist)) |> mid_point
+  def rank(_, lo, _, _) when lo == -1, do: []
+  def rank(_, _, hi, _) when hi == 0, do: []
+  def rank(key, lo, hi, _) when lo > hi, do: [key]
+  def rank(key, lo, hi, set) when lo <= hi do
+    index = mid_point(lo, hi)
 
-    check_value?(index, key, whitelist) |> repeater(key, index, whitelist)
-  end
-
-  def repeater(continue, val, index, set) when !continue do
-    rank(val, subset(val, index, set))
-  end
-  def repeater(continue, key, _index, _set) when continue, do: [key]
-
-  def subset(val, index, set) do
-    cond do
-      val > position_value(set, index) ->
-        { _, high } = Enum.split(set, index)
-        high
-      val < position_value(set, index) ->
-        { low, _ } = Enum.split(set, index)
-        low
-      true ->
-        []
+    { new_lo, new_hi } = cond do
+      to_integer(key) < value_at(index, set) -> { lo, index - 1 }
+      to_integer(key) > value_at(index, set) -> { index + 1, hi }
+      to_integer(key) == value_at(index, set) -> { -1, -1 }
+      :else -> { index, index }
     end
+    rank(key, new_lo, new_hi, set)
   end
 
-  def check_value?(index, val, set), do: val == position_value(set, index)
+  defp mid_point(min, max), do: min + (max - min) / 2 |> :erlang.trunc
 
-  def position_value(set, index), do: Enum.at(set, index)
+  defp value_at(index, set), do: Enum.at(set, index) |> to_integer
 
-  def mid_point(range), do: range.first + (range.last - range.first) / 2 |> :erlang.trunc
-
-  def max_index(list) when list != nil, do: Enum.count(list) - 1
-
-  def range(first, last) when first > last, do: nil
-  def range(first, last), do: Range.new(first: first, last: last)
-
-  def to_integer(str) when is_binary(str) do
-    { val, _ } = String.to_integer(str)
-    val
+  defp to_integer(str) when is_binary(str) do
+    { num, _ } = String.to_integer(str)
+    num
   end
 end
