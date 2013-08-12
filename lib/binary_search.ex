@@ -5,11 +5,11 @@ defmodule BinarySearch do
     2. reduce the set to find value
     3. return items not in whitelist
   """
-  def run(whitelist, input) do
-    check_set = Enum.sort(whitelist)
+  def run(whitelist, input), do: run_search(Enum.sort(whitelist), input) |> List.flatten
 
-    Enum.map(input, fn(x) -> rank(x, 0, Enum.count(check_set) - 1, check_set) end) |> List.flatten
-  end
+  def run_search(check_set, input), do: Enum.map(input, fn(x) -> start_rank(x, check_set) end)
+
+  def start_rank(key, check_set), do: rank(key, 0, Enum.count(check_set) - 1, check_set)
 
   def rank(_, lo, _, _) when lo == -1, do: []
   def rank(_, _, hi, _) when hi == 0, do: []
